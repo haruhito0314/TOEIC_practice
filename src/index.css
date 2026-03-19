@@ -1,0 +1,320 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   TOEIC Reading Practice App — Global Theme
+   Design: "Quiet Study" — Soft Minimalism × Japanese Wabi-Sabi
+   
+   Color Philosophy:
+   - Base: Warm White (#FAFAF8) — not cold, paper-like warmth
+   - Accent: Sage Green (#6B9E7A) — natural, calm achievement
+   - Sub: Light Sand (#F0EDE8) — card backgrounds
+   - Text: Charcoal (#2C2C2C) — easy on the eyes
+   - Correct: Soft Green (#4CAF82)
+   - Incorrect: Terracotta (#E07B6A)
+   ============================================================ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  /* Sage Green primary */
+  --primary: oklch(0.60 0.09 155);
+  --primary-foreground: oklch(0.98 0 0);
+  
+  /* Warm White base */
+  --background: oklch(0.99 0.004 80);
+  --foreground: oklch(0.22 0.01 60);
+  
+  /* Cards: Light Sand */
+  --card: oklch(0.98 0.006 75);
+  --card-foreground: oklch(0.22 0.01 60);
+  
+  --popover: oklch(0.99 0.004 80);
+  --popover-foreground: oklch(0.22 0.01 60);
+  
+  /* Secondary: Soft Sand */
+  --secondary: oklch(0.95 0.010 75);
+  --secondary-foreground: oklch(0.35 0.01 60);
+  
+  /* Muted */
+  --muted: oklch(0.95 0.008 75);
+  --muted-foreground: oklch(0.55 0.01 75);
+  
+  /* Accent: Lighter Sage */
+  --accent: oklch(0.92 0.04 155);
+  --accent-foreground: oklch(0.35 0.08 155);
+  
+  /* Destructive: Terracotta */
+  --destructive: oklch(0.60 0.14 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  
+  --border: oklch(0.90 0.008 75);
+  --input: oklch(0.90 0.008 75);
+  --ring: oklch(0.60 0.09 155);
+  
+  /* Charts */
+  --chart-1: oklch(0.60 0.09 155);
+  --chart-2: oklch(0.70 0.12 155);
+  --chart-3: oklch(0.50 0.08 155);
+  --chart-4: oklch(0.65 0.10 25);
+  --chart-5: oklch(0.75 0.08 75);
+  
+  --radius: 0.75rem;
+  
+  --sidebar: oklch(0.97 0.006 75);
+  --sidebar-foreground: oklch(0.22 0.01 60);
+  --sidebar-primary: oklch(0.60 0.09 155);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.92 0.04 155);
+  --sidebar-accent-foreground: oklch(0.35 0.08 155);
+  --sidebar-border: oklch(0.90 0.008 75);
+  --sidebar-ring: oklch(0.60 0.09 155);
+  
+  /* Custom app colors */
+  --correct: oklch(0.58 0.13 155);
+  --correct-bg: oklch(0.93 0.05 155);
+  --incorrect: oklch(0.60 0.14 25);
+  --incorrect-bg: oklch(0.95 0.04 25);
+  --part5-color: oklch(0.60 0.09 155);
+  --part6-color: oklch(0.58 0.12 220);
+  --part7-color: oklch(0.60 0.10 50);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "kern" 1, "liga" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 900px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container {
+      padding-left: 3rem;
+      padding-right: 3rem;
+      max-width: 1100px;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .container {
+      padding-left: 4rem;
+      padding-right: 4rem;
+      max-width: 1280px;
+    }
+  }
+  
+  /* Quiet Study カスタムコンポーネント */
+  .qs-card {
+    @apply bg-card rounded-2xl p-5;
+    box-shadow: 0 1px 3px oklch(0.22 0.01 60 / 0.06), 0 1px 2px oklch(0.22 0.01 60 / 0.04);
+  }
+  
+  .qs-card-hover {
+    @apply bg-card rounded-2xl p-5 transition-all duration-200;
+    box-shadow: 0 1px 3px oklch(0.22 0.01 60 / 0.06), 0 1px 2px oklch(0.22 0.01 60 / 0.04);
+  }
+  .qs-card-hover:hover {
+    box-shadow: 0 4px 12px oklch(0.22 0.01 60 / 0.10), 0 2px 4px oklch(0.22 0.01 60 / 0.06);
+    transform: translateY(-1px);
+  }
+  
+  .qs-btn-primary {
+    @apply bg-primary text-primary-foreground rounded-full px-6 py-3 font-medium text-sm transition-all duration-200;
+  }
+  .qs-btn-primary:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px oklch(0.60 0.09 155 / 0.30);
+  }
+  .qs-btn-primary:active {
+    transform: translateY(0);
+  }
+  
+  .qs-btn-secondary {
+    @apply bg-secondary text-secondary-foreground rounded-full px-6 py-3 font-medium text-sm transition-all duration-200;
+  }
+  .qs-btn-secondary:hover {
+    @apply bg-muted;
+  }
+  
+  /* 正解・不正解スタイル */
+  .answer-correct {
+    background-color: var(--correct-bg);
+    border-color: var(--correct);
+    color: var(--correct);
+  }
+  
+  .answer-incorrect {
+    background-color: var(--incorrect-bg);
+    border-color: var(--incorrect);
+    color: var(--incorrect);
+  }
+  
+  /* Part バッジ */
+  .part5-badge {
+    background-color: oklch(0.92 0.04 155);
+    color: oklch(0.40 0.09 155);
+  }
+  .part6-badge {
+    background-color: oklch(0.92 0.04 220);
+    color: oklch(0.40 0.09 220);
+  }
+  .part7-badge {
+    background-color: oklch(0.94 0.04 50);
+    color: oklch(0.45 0.10 50);
+  }
+  
+  /* フェードイン */
+  .fade-in {
+    animation: fadeIn 0.25s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* スライドアップ */
+  .slide-up {
+    animation: slideUp 0.30s ease-out;
+  }
+  
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* 正解アニメーション */
+  .correct-pulse {
+    animation: correctPulse 0.4s ease-out;
+  }
+  
+  @keyframes correctPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+  
+  /* ボトムナビゲーション用の余白 */
+  .bottom-nav-spacer {
+    height: 5rem;
+  }
+
+  @media (min-width: 1024px) {
+    .bottom-nav-spacer {
+      height: 0;
+    }
+  }
+  
+  /* スクロールバーのスタイリング */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.80 0.008 75);
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.70 0.008 75);
+  }
+  
+  /* 問題文のスタイリング */
+  .question-text {
+    line-height: 1.8;
+    letter-spacing: 0.01em;
+  }
+  
+  /* 長文パッセージ */
+  .passage-text {
+    line-height: 1.9;
+    letter-spacing: 0.01em;
+    white-space: pre-wrap;
+  }
+}
