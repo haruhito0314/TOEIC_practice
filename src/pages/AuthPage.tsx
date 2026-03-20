@@ -2,7 +2,7 @@
 // TOEIC Reading Practice App — Auth Page
 // Google ログイン + Email/Password + ゲストモード対応
 // ============================================================
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { Mail, Lock, User, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,11 +22,13 @@ export default function AuthPage() {
     confirmPassword: "",
   });
 
-  // Already logged in — redirect home
-  if (isLoggedIn) {
-    navigate("/");
-    return null;
-  }
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate("/");
+    }
+  }, [isLoggedIn, navigate]);
+
+  if (isLoggedIn) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

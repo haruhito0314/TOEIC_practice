@@ -106,6 +106,19 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         questions = getRandomQuestionsGrouped(config.questionCount) as AnyQuestion[];
       }
 
+      if (questions.length === 0) {
+        setState({
+          session: null,
+          questions: [],
+          currentIndex: 0,
+          isActive: false,
+          isFinished: false,
+          config: null,
+          elapsedSeconds: 0,
+        });
+        return;
+      }
+
       const session: StudySession = {
         id: nanoid(),
         mode: config.mode,

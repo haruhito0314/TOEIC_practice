@@ -41,7 +41,28 @@ function saveLocalRecord(record: StudyRecord) {
 }
 
 function getTodayString(): string {
-  return new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseLocalDateString(dateStr: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const monthIndex = Number(match[2]) - 1;
+  const day = Number(match[3]);
+  return new Date(year, monthIndex, day);
+}
+
+function getDiffCalendarDays(fromDateStr: string, toDateStr: string): number {
+  const from = parseLocalDateString(fromDateStr);
+  const to = parseLocalDateString(toDateStr);
+  if (!from || !to) return 0;
+  const msPerDay = 1000 * 60 * 60 * 24;
+  return Math.floor((to.getTime() - from.getTime()) / msPerDay);
 }
 
 // ── Appwrite cloud helpers ──
@@ -53,12 +74,28 @@ async function fetchCloudRecord(userId: string): Promise<StudyRecord | null> {
     if (res.documents.length === 0) return null;
     const doc = res.documents[0];
     // Also fetch sessions
-    const sessionsRes = await databases.listDocuments(
-      DATABASE_ID,
-      COLLECTION_SESSIONS,
-      [Query.equal("userId", userId), Query.limit(100), Query.orderDesc("startTime")]
-    );
-    const sessions: StudySession[] = sessionsRes.documents.map((s: any) => ({
+    const sessionDocs: any[] = [];
+    let cursorAfter: string | null = null;
+
+    while (true) {
+      const queries = [
+        Query.equal("userId", userId),
+        Query.limit(100),
+        Query.orderDesc("startTime"),
+      ];
+      if (cursorAfter) queries.push(Query.cursorAfter(cursorAfter));
+
+      const sessionsRes = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTION_SESSIONS,
+        queries
+      );
+      sessionDocs.push(...sessionsRes.documents);
+      if (sessionsRes.documents.length < 100) break;
+      cursorAfter = sessionsRes.documents[sessionsRes.documents.length - 1].$id;
+    }
+
+    const sessions: StudySession[] = sessionDocs.map((s: any) => ({
       id: s.sessionId,
       mode: s.mode,
       part: s.part,
@@ -147,8 +184,15 @@ function mergeRecords(local: StudyRecord, cloud: StudyRecord): StudyRecord {
     (s) => !cloudSessionIds.has(s.id)
   );
 
+  const mergedSessions = [...cloud.sessions, ...newLocalSessions];
+  const summedSeconds = mergedSessions.reduce((sum, session) => {
+    if (!session.endTime) return sum;
+    const durationSeconds = Math.floor((session.endTime - session.startTime) / 1000);
+    return sum + Math.max(0, durationSeconds);
+  }, 0);
+
   return {
-    sessions: [...cloud.sessions, ...newLocalSessions],
+    sessions: mergedSessions,
     bookmarks: mergedBookmarks,
     wrongQuestions: mergedWrong,
     streakDays: Math.max(cloud.streakDays, local.streakDays),
@@ -156,7 +200,10 @@ function mergeRecords(local: StudyRecord, cloud: StudyRecord): StudyRecord {
       cloud.lastStudyDate > local.lastStudyDate
         ? cloud.lastStudyDate
         : local.lastStudyDate,
-    totalStudySeconds: cloud.totalStudySeconds + local.totalStudySeconds,
+    totalStudySeconds:
+      summedSeconds > 0
+        ? summedSeconds
+        : Math.max(cloud.totalStudySeconds, local.totalStudySeconds),
   };
 }
 
@@ -164,12 +211,12 @@ function mergeRecords(local: StudyRecord, cloud: StudyRecord): StudyRecord {
 export function useStudyRecord() {
   const { user, isLoggedIn, isLoading: authLoading } = useAuth();
   const [record, setRecord] = useState<StudyRecord>(loadLocalRecord);
-  const hasSyncedRef = useRef(false);
+  const syncedUserIdRef = useRef<string | null>(null);
 
   // Sync with cloud when user logs in
   useEffect(() => {
-    if (authLoading || !isLoggedIn || !user || hasSyncedRef.current) return;
-    hasSyncedRef.current = true;
+    if (authLoading || !isLoggedIn || !user) return;
+    if (syncedUserIdRef.current === user.id) return;
 
     const syncWithCloud = async () => {
       const cloudRecord = await fetchCloudRecord(user.id);
@@ -205,19 +252,23 @@ export function useStudyRecord() {
       }
     };
 
-    syncWithCloud();
+    syncWithCloud().finally(() => {
+      syncedUserIdRef.current = user.id;
+    });
   }, [authLoading, isLoggedIn, user]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !user) {
+      syncedUserIdRef.current = null;
+    }
+  }, [isLoggedIn, user]);
 
   // Streak check on mount
   useEffect(() => {
     const today = getTodayString();
     const last = record.lastStudyDate;
     if (last && last !== today) {
-      const lastDate = new Date(last);
-      const todayDate = new Date(today);
-      const diffDays = Math.floor(
-        (todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
+      const diffDays = getDiffCalendarDays(last, today);
       if (diffDays > 1) {
         setRecord((prev) => {
           const updated = { ...prev, streakDays: 0 };
@@ -263,12 +314,7 @@ export function useStudyRecord() {
       const newStreakDays = isNewDay
         ? (() => {
             if (!currentRecord.lastStudyDate) return 1;
-            const lastDate = new Date(currentRecord.lastStudyDate);
-            const todayDate = new Date(today);
-            const diffDays = Math.floor(
-              (todayDate.getTime() - lastDate.getTime()) /
-                (1000 * 60 * 60 * 24)
-            );
+            const diffDays = getDiffCalendarDays(currentRecord.lastStudyDate, today);
             return diffDays === 1 ? currentRecord.streakDays + 1 : 1;
           })()
         : currentRecord.streakDays;

@@ -60,6 +60,12 @@ export default function QuizPage() {
     }
   }, [session, isFinished, navigate]);
 
+  useEffect(() => {
+    if (session && questions.length === 0) {
+      navigate("/study");
+    }
+  }, [session, questions.length, navigate]);
+
   // タイムアタックタイマー
   useEffect(() => {
     if (config?.mode === "timeattack" && config.timeLimit) {
@@ -116,7 +122,18 @@ export default function QuizPage() {
     navigate("/result");
   }, [finishSession, saveSession, navigate]);
 
-  if (!currentQuestion) return null;
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p
+          className="text-sm text-muted-foreground"
+          style={{ fontFamily: "'Noto Sans JP', sans-serif" }}
+        >
+          問題を読み込み中...
+        </p>
+      </div>
+    );
+  }
 
   const q = currentQuestion as AnyQuestion;
   const isAnswered = currentAnswer !== null || selectedAnswer !== null;
