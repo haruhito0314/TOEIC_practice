@@ -15,6 +15,7 @@ import type {
 } from "@/types/quiz";
 import {
   getRandomQuestions,
+  getRandomQuestionsGrouped,
   getQuestionsByPart,
   shuffleArray,
   allQuestions,
@@ -93,14 +94,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           .filter(Boolean) as AnyQuestion[];
         questions = shuffleArray(questions);
       } else if (config.mode === "random10") {
-        questions = getRandomQuestions(10);
+        // ランダム10問（パッセージグループ化あり）
+        questions = getRandomQuestionsGrouped(10) as AnyQuestion[];
       } else if (config.mode === "part") {
-        const pool = getQuestionsByPart(config.part as Part) as AnyQuestion[];
-        questions = shuffleArray(pool).slice(0, config.questionCount);
+        // Part別演習（パッセージグループ化あり）
+        questions = getRandomQuestionsGrouped(config.questionCount, config.part as Part) as AnyQuestion[];
       } else if (config.mode === "timeattack") {
-        questions = getRandomQuestions(config.questionCount);
+        // タイムアタック（パッセージグループ化あり）
+        questions = getRandomQuestionsGrouped(config.questionCount) as AnyQuestion[];
       } else {
-        questions = getRandomQuestions(config.questionCount);
+        questions = getRandomQuestionsGrouped(config.questionCount) as AnyQuestion[];
       }
 
       const session: StudySession = {

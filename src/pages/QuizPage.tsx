@@ -90,9 +90,11 @@ export default function QuizPage() {
   useEffect(() => {
     setSelectedAnswer(null);
     setShowExplanation(false);
-    setShowPassage(false);
+    // Part 6/7 の場合はパッセージを展開したままにする
+    const nextQ = questions[currentIndex];
+    setShowPassage(nextQ?.part === "part6" || nextQ?.part === "part7");
     setQuestionStartTime(Date.now());
-  }, [currentIndex]);
+  }, [currentIndex, questions]);
 
   // Finish guard to prevent double-call of handleFinish
   const hasFinishedRef = useRef(false);

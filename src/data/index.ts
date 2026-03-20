@@ -116,6 +116,64 @@ export function getRandomQuestions(count: number, part?: Part) {
   return shuffleArray(pool).slice(0, Math.min(count, pool.length));
 }
 
+// ランダムN問取得 (Part 6/7 はパッセージ単位でグループ化)
+// Part 6/7 の問題は同じパッセージの問題が連続出題される
+export function getRandomQuestionsGrouped(count: number, part?: Part) {
+  if (part === "part5") {
+    return shuffleArray(part5Questions).slice(0, Math.min(count, part5Questions.length));
+  }
+  if (part === "part6") {
+    const passages = shuffleArray(part6Passages);
+    const result: Part6Question[] = [];
+    for (const p of passages) {
+      if (result.length >= count) break;
+      result.push(...p.questions);
+    }
+    return result.slice(0, count);
+  }
+  if (part === "part7") {
+    const passages = shuffleArray(part7Passages);
+    const result: Part7Question[] = [];
+    for (const p of passages) {
+      if (result.length >= count) break;
+      result.push(...p.questions);
+    }
+    return result.slice(0, count);
+  }
+
+  // "all" mode: mix Part 5 (individual) + Part 6/7 (passage-grouped)
+  // Pick random passages, then fill remaining with Part 5
+  const p6shuffled = shuffleArray(part6Passages);
+  const p7shuffled = shuffleArray(part7Passages);
+
+  // Collect passage groups (each is a block of questions)
+  type QuestionBlock = { questions: (Part5Question | Part6Question | Part7Question)[] };
+  const blocks: QuestionBlock[] = [];
+
+  // Add Part 6 passages as blocks
+  for (const p of p6shuffled) {
+    blocks.push({ questions: [...p.questions] });
+  }
+  // Add Part 7 passages as blocks
+  for (const p of p7shuffled) {
+    blocks.push({ questions: [...p.questions] });
+  }
+  // Add Part 5 questions as individual blocks
+  const p5shuffled = shuffleArray(part5Questions);
+  for (const q of p5shuffled) {
+    blocks.push({ questions: [q] });
+  }
+
+  // Shuffle all blocks and flatten, respecting passage grouping
+  const shuffledBlocks = shuffleArray(blocks);
+  const result: (Part5Question | Part6Question | Part7Question)[] = [];
+  for (const block of shuffledBlocks) {
+    if (result.length >= count) break;
+    result.push(...block.questions);
+  }
+  return result.slice(0, count);
+}
+
 // 問題統計
 export function getQuestionStats() {
   return {
