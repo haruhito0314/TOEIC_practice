@@ -21,7 +21,9 @@ import {
 } from "lucide-react";
 import { useStudyRecord } from "@/hooks/useStudyRecord";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSession } from "@/contexts/SessionContext";
 import { getQuestionStats } from "@/data/index";
+import { toast } from "sonner";
 
 const questionStats = getQuestionStats();
 
@@ -113,8 +115,9 @@ function StatCard({ icon, label, value, sub, color }: StatCardProps) {
 
 export default function Home() {
   const [, navigate] = useLocation();
-  const { stats } = useStudyRecord();
+  const { stats, record } = useStudyRecord();
   const { user, isGuest, guestName, logout } = useAuth();
+  const { startSession } = useSession();
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("ja-JP", {
@@ -335,28 +338,41 @@ export default function Home() {
               description="全Partからランダムに10問出題"
               color="bg-accent"
               badge="おすすめ"
-              onClick={() => navigate("/study?mode=random10")}
+              onClick={() => {
+                startSession({ mode: "random10", part: "all", questionCount: 10 });
+                navigate("/quiz");
+              }}
             />
             <ModeCard
               icon={<BookOpen size={18} className="text-blue-600" />}
               title="Part別演習"
               description="Part 5 / 6 / 7 を選んで集中練習"
               color="bg-blue-50"
-              onClick={() => navigate("/study?mode=part")}
+              onClick={() => navigate("/part-select")}
             />
             <ModeCard
               icon={<RotateCcw size={18} className="text-violet-600" />}
               title="苦手問題復習"
               description={`間違えた問題を集中的に復習 (${stats.wrongCount}問)`}
               color="bg-violet-50"
-              onClick={() => navigate("/study?mode=review")}
+              onClick={() => {
+                if (record.wrongQuestions.length === 0) {
+                  toast.info("復習リストが空です。まず問題を解いてみましょう！");
+                  return;
+                }
+                startSession(
+                  { mode: "review", part: "all", questionCount: Math.min(stats.wrongCount, 10) },
+                  record.wrongQuestions
+                );
+                navigate("/quiz");
+              }}
             />
             <ModeCard
               icon={<Zap size={18} className="text-amber-600" />}
               title="タイムアタック"
               description="制限時間内に素早く解く"
               color="bg-amber-50"
-              onClick={() => navigate("/study?mode=timeattack")}
+              onClick={() => navigate("/timeattack")}
             />
           </div>
         </div>

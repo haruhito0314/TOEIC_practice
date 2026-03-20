@@ -232,7 +232,13 @@ export function useStudyRecord() {
     (updater: (prev: StudyRecord) => StudyRecord) => {
       setRecord((prev) => {
         const updated = updater(prev);
-        saveLocalRecord(updated);
+        // Write to localStorage SYNCHRONOUSLY inside the updater
+        // so it persists even if the component unmounts immediately after
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        } catch {
+          // Storage full or unavailable
+        }
         // Fire-and-forget cloud update
         if (user) {
           upsertCloudRecord(user.id, updated);
@@ -247,57 +253,68 @@ export function useStudyRecord() {
   const saveSession = useCallback(
     (session: StudySession) => {
       const today = getTodayString();
-      updateRecord((prev) => {
-        const isNewDay = prev.lastStudyDate !== today;
-        const newStreakDays = isNewDay
-          ? (() => {
-              if (!prev.lastStudyDate) return 1;
-              const lastDate = new Date(prev.lastStudyDate);
-              const todayDate = new Date(today);
-              const diffDays = Math.floor(
-                (todayDate.getTime() - lastDate.getTime()) /
-                  (1000 * 60 * 60 * 24)
-              );
-              return diffDays === 1 ? prev.streakDays + 1 : 1;
-            })()
-          : prev.streakDays;
 
-        // Update wrong questions
-        const newWrongIds = session.answers
-          .filter((a) => !a.isCorrect)
-          .map((a) => a.questionId);
-        const correctIds = session.answers
-          .filter((a) => a.isCorrect)
-          .map((a) => a.questionId);
+      // Read current record directly from localStorage (NOT from React state)
+      // to avoid React 18 batching issues where setState updater may not run
+      // if the component unmounts due to navigation
+      const currentRecord = loadLocalRecord();
 
-        const mergedWrong = [
-          ...prev.wrongQuestions.filter((id) => !correctIds.includes(id)),
-          ...newWrongIds,
-        ];
-        const updatedWrong = mergedWrong.filter(
-          (id, index) => mergedWrong.indexOf(id) === index
-        );
+      const isNewDay = currentRecord.lastStudyDate !== today;
+      const newStreakDays = isNewDay
+        ? (() => {
+            if (!currentRecord.lastStudyDate) return 1;
+            const lastDate = new Date(currentRecord.lastStudyDate);
+            const todayDate = new Date(today);
+            const diffDays = Math.floor(
+              (todayDate.getTime() - lastDate.getTime()) /
+                (1000 * 60 * 60 * 24)
+            );
+            return diffDays === 1 ? currentRecord.streakDays + 1 : 1;
+          })()
+        : currentRecord.streakDays;
 
-        const sessionDuration = session.endTime
-          ? Math.floor((session.endTime - session.startTime) / 1000)
-          : 0;
+      // Update wrong questions
+      const newWrongIds = session.answers
+        .filter((a) => !a.isCorrect)
+        .map((a) => a.questionId);
+      const correctIds = session.answers
+        .filter((a) => a.isCorrect)
+        .map((a) => a.questionId);
 
-        return {
-          ...prev,
-          sessions: [...prev.sessions, session],
-          wrongQuestions: updatedWrong,
-          streakDays: newStreakDays,
-          lastStudyDate: today,
-          totalStudySeconds: prev.totalStudySeconds + sessionDuration,
-        };
-      });
+      const mergedWrong = [
+        ...currentRecord.wrongQuestions.filter((id) => !correctIds.includes(id)),
+        ...newWrongIds,
+      ];
+      const updatedWrong = mergedWrong.filter(
+        (id, index) => mergedWrong.indexOf(id) === index
+      );
 
-      // Also save individual session to cloud
+      const sessionDuration = session.endTime
+        ? Math.floor((session.endTime - session.startTime) / 1000)
+        : 0;
+
+      const updatedRecord: StudyRecord = {
+        ...currentRecord,
+        sessions: [...currentRecord.sessions, session],
+        wrongQuestions: updatedWrong,
+        streakDays: newStreakDays,
+        lastStudyDate: today,
+        totalStudySeconds: currentRecord.totalStudySeconds + sessionDuration,
+      };
+
+      // Write SYNCHRONOUSLY to localStorage — this runs before any unmount
+      saveLocalRecord(updatedRecord);
+
+      // Also update React state (best-effort, may be batched/dropped)
+      setRecord(updatedRecord);
+
+      // Fire-and-forget cloud update
       if (user) {
+        upsertCloudRecord(user.id, updatedRecord);
         saveCloudSession(user.id, session);
       }
     },
-    [updateRecord, user]
+    [user]
   );
 
   // Toggle bookmark

@@ -12,6 +12,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import BottomNav from "./components/BottomNav";
 import Home from "./pages/Home";
 import StudyPage from "./pages/StudyPage";
+import PartSelectPage from "./pages/PartSelectPage";
+import TimeAttackPage from "./pages/TimeAttackPage";
 import QuizPage from "./pages/QuizPage";
 import ResultPage from "./pages/ResultPage";
 import ReviewPage from "./pages/ReviewPage";
@@ -25,6 +27,8 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/study" component={StudyPage} />
+        <Route path="/part-select" component={PartSelectPage} />
+        <Route path="/timeattack" component={TimeAttackPage} />
         <Route path="/quiz" component={QuizPage} />
         <Route path="/result" component={ResultPage} />
         <Route path="/review" component={ReviewPage} />

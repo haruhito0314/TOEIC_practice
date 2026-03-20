@@ -49,7 +49,7 @@ export default function QuizPage() {
   const [selectedAnswer, setSelectedAnswer] = useState<"A" | "B" | "C" | "D" | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
-  const [showPassage, setShowPassage] = useState(false);
+  const [showPassage, setShowPassage] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -94,14 +94,19 @@ export default function QuizPage() {
     setQuestionStartTime(Date.now());
   }, [currentIndex]);
 
+  // Finish guard to prevent double-call of handleFinish
+  const hasFinishedRef = useRef(false);
+
   // 終了時に結果画面へ
   useEffect(() => {
-    if (isFinished) {
+    if (isFinished && !hasFinishedRef.current) {
       handleFinish();
     }
   }, [isFinished]);
 
   const handleFinish = useCallback(() => {
+    if (hasFinishedRef.current) return;
+    hasFinishedRef.current = true;
     const finished = finishSession();
     if (finished) {
       saveSession(finished);
