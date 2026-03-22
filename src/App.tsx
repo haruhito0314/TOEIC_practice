@@ -19,6 +19,8 @@ import ResultPage from "./pages/ResultPage";
 import ReviewPage from "./pages/ReviewPage";
 import StatsPage from "./pages/StatsPage";
 import AuthPage from "./pages/AuthPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import NotFound from "./pages/NotFound";
 
 function Router() {
@@ -34,6 +36,8 @@ function Router() {
         <Route path="/review" component={ReviewPage} />
         <Route path="/stats" component={StatsPage} />
         <Route path="/auth" component={AuthPage} />
+        <Route path="/forgot-password" component={ForgotPasswordPage} />
+        <Route path="/reset-password" component={ResetPasswordPage} />
         <Route component={NotFound} />
       </Switch>
       <BottomNav />

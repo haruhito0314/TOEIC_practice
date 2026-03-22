@@ -27,6 +27,8 @@ interface AuthContextValue {
   loginWithGoogle: () => void;
   loginWithEmail: (email: string, password: string) => Promise<void>;
   signupWithEmail: (email: string, password: string, name: string) => Promise<void>;
+  sendPasswordRecoveryEmail: (email: string, resetUrl: string) => Promise<void>;
+  resetPassword: (userId: string, secret: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -107,6 +109,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const sendPasswordRecoveryEmail = useCallback(async (email: string, resetUrl: string) => {
+    setIsLoading(true);
+    try {
+      await account.createRecovery(email, resetUrl);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const resetPassword = useCallback(async (userId: string, secret: string, password: string) => {
+    setIsLoading(true);
+    try {
+      await account.updateRecovery(userId, secret, password);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await account.deleteSession("current");
@@ -130,6 +150,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginWithGoogle,
         loginWithEmail,
         signupWithEmail,
+        sendPasswordRecoveryEmail,
+        resetPassword,
         logout,
       }}
     >

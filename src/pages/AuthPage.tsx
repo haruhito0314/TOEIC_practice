@@ -225,12 +225,24 @@ export default function AuthPage() {
 
                 {/* パスワードフィールド */}
                 <div>
-                  <label
-                    className="block text-xs font-medium text-foreground mb-1.5"
-                    style={{ fontFamily: "'Noto Sans JP', sans-serif" }}
-                  >
-                    パスワード
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label
+                      className="block text-xs font-medium text-foreground"
+                      style={{ fontFamily: "'Noto Sans JP', sans-serif" }}
+                    >
+                      パスワード
+                    </label>
+                    {!isSignup && (
+                      <button
+                        type="button"
+                        onClick={() => navigate("/forgot-password")}
+                        className="text-[11px] text-primary hover:underline transition-colors focus:outline-none"
+                        style={{ fontFamily: "'Noto Sans JP', sans-serif" }}
+                      >
+                        パスワードをお忘れの方
+                      </button>
+                    )}
+                  </div>
                   <div className="relative">
                     <Lock
                       size={16}

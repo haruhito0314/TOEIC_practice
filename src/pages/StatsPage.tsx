@@ -365,8 +365,9 @@ export default function StatsPage() {
                 最近のセッション
               </h2>
               <div className="flex flex-col gap-2">
-                {record.sessions
+                {[...record.sessions]
                   .slice(-5)
+                  .reverse()
                   .map((s) => {
                     const correct = s.answers.filter((a) => a.isCorrect).length;
                     const total = s.answers.length;

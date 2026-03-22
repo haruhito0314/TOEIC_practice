@@ -163,6 +163,19 @@ function gerund(verb: string): string {
   return `${verb}ing`;
 }
 
+function pluralizePhrase(phrase: string): string {
+  if (phrase.endsWith("analysis")) {
+    return `${phrase.slice(0, -"analysis".length)}analyses`;
+  }
+  if (phrase.endsWith("y") && !/[aeiou]y$/.test(phrase)) {
+    return `${phrase.slice(0, -1)}ies`;
+  }
+  if (/(s|sh|ch|x|z)$/.test(phrase)) {
+    return `${phrase}es`;
+  }
+  return `${phrase}s`;
+}
+
 const templates: Template[] = [
   {
     difficulty: "easy",
@@ -215,16 +228,16 @@ const templates: Template[] = [
     build: (v) => {
       const noun = pick(nouns, v + 3);
       return {
-        sentence: `Rarely _____ such a detailed ${noun} submitted before the deadline.`,
+        sentence: `Rarely _____ we received such a detailed ${noun} before the deadline.`,
         choices: [
           { id: "A", text: "we have" },
-          { id: "B", text: "have we" },
-          { id: "C", text: "we do" },
-          { id: "D", text: "did we have" },
+          { id: "B", text: "have" },
+          { id: "C", text: "did" },
+          { id: "D", text: "had" },
         ],
         correctAnswer: "B",
         explanation: "Negative adverbials at the beginning require inversion.",
-        explanationJa: "Rarely などの否定的副詞句が文頭に来ると倒置が必要で have we が正解です。",
+        explanationJa: "Rarely などの否定的副詞句が文頭に来ると倒置が必要で、have が正解です。",
       };
     },
   },
@@ -275,14 +288,21 @@ const templates: Template[] = [
     category: "比較",
     tags: ["比較級", "数値", "分析"],
     build: (v) => {
-      const noun = pick(["higher", "lower", "stronger", "faster", "better"], v);
+      const forms = pick(
+        [
+          { base: "high", comparative: "higher", superlative: "highest", adverb: "highly" },
+          { base: "low", comparative: "lower", superlative: "lowest", adverb: "lowly" },
+          { base: "good", comparative: "better", superlative: "best", adverb: "well" },
+        ],
+        v
+      );
       return {
         sentence: `This quarter's retention rate is significantly _____ than last quarter's.`,
         choices: [
-          { id: "A", text: "high" },
-          { id: "B", text: noun },
-          { id: "C", text: "highest" },
-          { id: "D", text: "highly" },
+          { id: "A", text: forms.base },
+          { id: "B", text: forms.comparative },
+          { id: "C", text: forms.superlative },
+          { id: "D", text: forms.adverb },
         ],
         correctAnswer: "B",
         explanation: "Comparative form is required before 'than'.",
@@ -295,19 +315,19 @@ const templates: Template[] = [
     category: "仮定法",
     tags: ["仮定法過去完了", "上級", "論理"],
     build: (v) => {
-      const verb = pick(["arrive", "ship", "approve", "complete", "submit"], v);
+      const verb = pick(["ship", "approve", "complete", "submit", "review"], v);
       const verbEd = pastParticiple(verb);
       return {
         sentence: `If the documents _____ earlier, we would already have finalized the agreement.`,
         choices: [
           { id: "A", text: verb },
           { id: "B", text: verbEd },
-          { id: "C", text: `had ${verbEd}` },
-          { id: "D", text: `have ${verbEd}` },
+          { id: "C", text: `had been ${verbEd}` },
+          { id: "D", text: `have been ${verbEd}` },
         ],
         correctAnswer: "C",
-        explanation: "Past unreal condition requires 'if + had + past participle'.",
-        explanationJa: "過去の反実仮想は if + had + 過去分詞 を使うため C が正解です。",
+        explanation: "Past unreal condition in passive form requires 'if + had been + past participle'.",
+        explanationJa: "受動態の過去の反実仮想は if + had been + 過去分詞 を使うため C が正解です。",
       };
     },
   },
@@ -337,8 +357,9 @@ const templates: Template[] = [
     tags: ["受動態", "承認", "基本"],
     build: (v) => {
       const noun = pick(nouns, v + 13);
+      const pluralNoun = pluralizePhrase(noun);
       return {
-        sentence: `All ${noun}s must be _____ by a supervisor before submission.`,
+        sentence: `All ${pluralNoun} must be _____ by a supervisor before submission.`,
         choices: [
           { id: "A", text: "approve" },
           { id: "B", text: "approving" },
@@ -397,7 +418,7 @@ const templates: Template[] = [
     category: "動名詞",
     tags: ["look forward to", "定型表現", "頻出"],
     build: (v) => {
-      const verb = pick(["work", "collaborate", "assist", "support", "partner"], v);
+      const verb = pick(["work", "collaborate", "coordinate", "communicate", "partner"], v);
       const verbIng = gerund(verb);
       const verbEd = pastParticiple(verb);
       return {
@@ -500,18 +521,52 @@ const templates: Template[] = [
     category: "品詞問題",
     tags: ["名詞", "並列", "基本"],
     build: (v) => {
-      const second = pick(["efficiency", "accuracy", "consistency", "productivity", "transparency"], v);
+      const family = pick(
+        [
+          {
+            noun: "efficiency",
+            adjective: "efficient",
+            adverb: "efficiently",
+            distractor: "inefficient",
+          },
+          {
+            noun: "accuracy",
+            adjective: "accurate",
+            adverb: "accurately",
+            distractor: "inaccurate",
+          },
+          {
+            noun: "consistency",
+            adjective: "consistent",
+            adverb: "consistently",
+            distractor: "inconsistent",
+          },
+          {
+            noun: "stability",
+            adjective: "stable",
+            adverb: "stably",
+            distractor: "unstable",
+          },
+          {
+            noun: "professionalism",
+            adjective: "professional",
+            adverb: "professionally",
+            distractor: "unprofessional",
+          },
+        ],
+        v
+      );
       return {
-        sentence: `The new policy aims to improve workplace safety and _____.`,
+        sentence: `The new policy aims to improve workplace safety and _____ in daily reporting.`,
         choices: [
-          { id: "A", text: "efficient" },
-          { id: "B", text: `${second}ly` },
-          { id: "C", text: second },
-          { id: "D", text: "efficiently" },
+          { id: "A", text: family.adjective },
+          { id: "B", text: family.adverb },
+          { id: "C", text: family.noun },
+          { id: "D", text: family.distractor },
         ],
         correctAnswer: "C",
-        explanation: "A noun parallel to 'safety' is needed.",
-        explanationJa: "safety と並列になる名詞が必要なので C が正解です。",
+        explanation: "A noun is required after 'improve ... and ___ in daily reporting'.",
+        explanationJa: "この位置には名詞が必要なので C が正解です。",
       };
     },
   },
