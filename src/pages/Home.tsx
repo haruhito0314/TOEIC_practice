@@ -25,8 +25,6 @@ import { useSession } from "@/contexts/SessionContext";
 import { getQuestionStats } from "@/data/index";
 import { toast } from "sonner";
 
-const questionStats = getQuestionStats();
-
 interface ModeCardProps {
   icon: React.ReactNode;
   title: string;
@@ -118,6 +116,7 @@ export default function Home() {
   const { stats, record } = useStudyRecord();
   const { user, isGuest, guestName, logout } = useAuth();
   const { startSession } = useSession();
+  const questionStats = getQuestionStats();
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("ja-JP", {
@@ -384,14 +383,24 @@ export default function Home() {
               className="text-xs font-semibold text-muted-foreground mb-3 lg:mb-4"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
-              問題データベース
+              問題データベース（合計 {questionStats.total} 問）
             </h3>
             <div className="flex gap-4 lg:gap-8">
               {[
                 { label: "Part 5", count: questionStats.part5, color: "part5-badge" },
-                { label: "Part 6", count: questionStats.part6, color: "part6-badge" },
-                { label: "Part 7", count: questionStats.part7, color: "part7-badge" },
-              ].map(({ label, count, color }) => (
+                {
+                  label: "Part 6",
+                  count: questionStats.part6,
+                  passageCount: questionStats.part6Passages,
+                  color: "part6-badge",
+                },
+                {
+                  label: "Part 7",
+                  count: questionStats.part7,
+                  passageCount: questionStats.part7Passages,
+                  color: "part7-badge",
+                },
+              ].map(({ label, count, passageCount, color }) => (
                 <div key={label} className="flex-1 text-center">
                   <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${color} mb-1`}>
                     {label}
@@ -406,7 +415,7 @@ export default function Home() {
                     className="text-[10px] text-muted-foreground"
                     style={{ fontFamily: "'Noto Sans JP', sans-serif" }}
                   >
-                    問
+                    {passageCount ? `問 (${passageCount}セット)` : "問"}
                   </p>
                 </div>
               ))}

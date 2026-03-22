@@ -65,6 +65,10 @@ function getDiffCalendarDays(fromDateStr: string, toDateStr: string): number {
   return Math.floor((to.getTime() - from.getTime()) / msPerDay);
 }
 
+function sortSessionsAsc(sessions: StudySession[]): StudySession[] {
+  return [...sessions].sort((a, b) => a.startTime - b.startTime);
+}
+
 // ── Appwrite cloud helpers ──
 async function fetchCloudRecord(userId: string): Promise<StudyRecord | null> {
   try {
@@ -105,7 +109,7 @@ async function fetchCloudRecord(userId: string): Promise<StudyRecord | null> {
       answers: JSON.parse(s.answersJSON || "[]"),
     }));
     return {
-      sessions,
+      sessions: sortSessionsAsc(sessions),
       bookmarks: doc.bookmarks || [],
       wrongQuestions: doc.wrongQuestions || [],
       streakDays: doc.streakDays || 0,
@@ -173,6 +177,29 @@ async function saveCloudSession(userId: string, session: StudySession) {
   }
 }
 
+async function deleteAllCloudSessions(userId: string) {
+  try {
+    let cursorAfter: string | null = null;
+    while (true) {
+      const queries = [Query.equal("userId", userId), Query.limit(100)];
+      if (cursorAfter) queries.push(Query.cursorAfter(cursorAfter));
+      const res = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTION_SESSIONS,
+        queries
+      );
+      if (res.documents.length === 0) break;
+      for (const doc of res.documents) {
+        await databases.deleteDocument(DATABASE_ID, COLLECTION_SESSIONS, doc.$id);
+      }
+      if (res.documents.length < 100) break;
+      cursorAfter = res.documents[res.documents.length - 1].$id;
+    }
+  } catch (err) {
+    console.warn("Failed to delete cloud sessions", err);
+  }
+}
+
 // Merge local guest data into cloud data
 function mergeRecords(local: StudyRecord, cloud: StudyRecord): StudyRecord {
   const mergedBookmarks = [...new Set([...cloud.bookmarks, ...local.bookmarks])];
@@ -184,7 +211,7 @@ function mergeRecords(local: StudyRecord, cloud: StudyRecord): StudyRecord {
     (s) => !cloudSessionIds.has(s.id)
   );
 
-  const mergedSessions = [...cloud.sessions, ...newLocalSessions];
+  const mergedSessions = sortSessionsAsc([...cloud.sessions, ...newLocalSessions]);
   const summedSeconds = mergedSessions.reduce((sum, session) => {
     if (!session.endTime) return sum;
     const durationSeconds = Math.floor((session.endTime - session.startTime) / 1000);
@@ -391,9 +418,13 @@ export function useStudyRecord() {
   );
 
   // Reset record
-  const resetRecord = useCallback(() => {
+  const resetRecord = useCallback(async () => {
     updateRecord(() => defaultRecord);
-  }, [updateRecord]);
+    if (user) {
+      await deleteAllCloudSessions(user.id);
+      await upsertCloudRecord(user.id, defaultRecord);
+    }
+  }, [updateRecord, user]);
 
   // Stats
   const stats = {
@@ -437,7 +468,7 @@ export function useStudyRecord() {
     totalStudyMinutes: Math.floor(record.totalStudySeconds / 60),
     bookmarkCount: record.bookmarks.length,
     wrongCount: record.wrongQuestions.length,
-    recentSessions: record.sessions.slice(-7).reverse(),
+    recentSessions: record.sessions.slice(-7),
   };
 
   return {

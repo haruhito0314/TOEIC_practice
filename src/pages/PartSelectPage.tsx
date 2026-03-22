@@ -9,12 +9,11 @@ import { useSession } from "@/contexts/SessionContext";
 import type { Part } from "@/types/quiz";
 import { getQuestionStats } from "@/data/index";
 
-const questionStats = getQuestionStats();
-
 export default function PartSelectPage() {
   const [, navigate] = useLocation();
   const { stats } = useStudyRecord();
   const { startSession } = useSession();
+  const questionStats = getQuestionStats();
 
   const parts = [
     {
@@ -34,6 +33,7 @@ export default function PartSelectPage() {
       sub: "長文穴埋め問題",
       description: "文脈を読み取って空所に入る語句を選ぶ。",
       count: questionStats.part6,
+      passageCount: questionStats.part6Passages,
       accuracy: stats.partAccuracy.part6,
       badgeClass: "part6-badge",
       color: "bg-sky-50",
@@ -45,6 +45,7 @@ export default function PartSelectPage() {
       sub: "読解問題",
       description: "メール・広告・記事などの文書を読んで設問に答える。",
       count: questionStats.part7,
+      passageCount: questionStats.part7Passages,
       accuracy: stats.partAccuracy.part7,
       badgeClass: "part7-badge",
       color: "bg-violet-50",
@@ -86,7 +87,7 @@ export default function PartSelectPage() {
 
         {/* Part カード */}
         <div className="flex flex-col gap-4 pb-8">
-          {parts.map(({ part, label, sub, description, count, accuracy, badgeClass, color, textColor }) => (
+          {parts.map(({ part, label, sub, description, count, passageCount, accuracy, badgeClass, color, textColor }) => (
             <div key={part} className="qs-card fade-in">
               <div className="flex items-start gap-4 mb-4">
                 <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center flex-shrink-0`}>
@@ -113,6 +114,7 @@ export default function PartSelectPage() {
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span style={{ fontFamily: "'DM Sans', sans-serif" }}>
                       {count}問
+                      {passageCount ? ` (${passageCount}セット)` : ""}
                     </span>
                     {accuracy > 0 && (
                       <span className="text-primary font-semibold" style={{ fontFamily: "'DM Sans', sans-serif" }}>

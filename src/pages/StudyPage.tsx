@@ -10,12 +10,11 @@ import type { SessionConfig, Part } from "@/types/quiz";
 import { getQuestionStats } from "@/data/index";
 import { toast } from "sonner";
 
-const questionStats = getQuestionStats();
-
 export default function StudyPage() {
   const [location, navigate] = useLocation();
   const { record, stats } = useStudyRecord();
   const { startSession } = useSession();
+  const questionStats = getQuestionStats();
 
   // URLパラメータからモードを取得
   const searchParams = new URLSearchParams(location.split("?")[1] || "");
@@ -137,6 +136,7 @@ export default function StudyPage() {
                   label: "Part 6",
                   sub: "長文穴埋め",
                   count: questionStats.part6,
+                  passageCount: questionStats.part6Passages,
                   accuracy: stats.partAccuracy.part6,
                   badgeClass: "part6-badge",
                 },
@@ -145,10 +145,11 @@ export default function StudyPage() {
                   label: "Part 7",
                   sub: "読解問題",
                   count: questionStats.part7,
+                  passageCount: questionStats.part7Passages,
                   accuracy: stats.partAccuracy.part7,
                   badgeClass: "part7-badge",
                 },
-              ].map(({ part, label, sub, count, accuracy, badgeClass }) => (
+              ].map(({ part, label, sub, count, passageCount, accuracy, badgeClass }) => (
                 <button
                   key={part}
                   onClick={() =>
@@ -174,6 +175,7 @@ export default function StudyPage() {
                     </span>
                     <span className="text-xs text-muted-foreground ml-2">
                       {count}問
+                      {passageCount ? ` (${passageCount}セット)` : ""}
                     </span>
                   </div>
                   {accuracy > 0 && (
