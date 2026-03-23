@@ -151,11 +151,11 @@ const scenarios: Scenario[] = [
 ];
 
 const adverbChoices = [
-  ["efficiently", "efficiency", "efficient", "efficiented"],
-  ["accurately", "accuracy", "accurate", "accurating"],
-  ["consistently", "consistency", "consistent", "consisted"],
-  ["carefully", "careful", "care", "caringly"],
-  ["securely", "security", "secure", "secured"],
+  ["efficiently", "efficiency", "efficient", "inefficient"],
+  ["accurately", "accuracy", "accurate", "inaccurate"],
+  ["consistently", "consistency", "consistent", "inconsistent"],
+  ["carefully", "careful", "care", "careless"],
+  ["securely", "security", "secure", "insecure"],
 ] as const;
 
 const collocationChoices = [
@@ -232,7 +232,7 @@ function difficultyPattern(index: number): [Difficulty, Difficulty, Difficulty, 
   return patterns[index % patterns.length];
 }
 
-const TOTAL_PART6_PASSAGES = 45;
+const TOTAL_PART6_PASSAGES = 70;
 
 export const part6Passages: Part6Passage[] = Array.from({ length: TOTAL_PART6_PASSAGES }, (_, i) => {
   const scenario = scenarios[i % scenarios.length];
@@ -298,7 +298,7 @@ export const part6Passages: Part6Passage[] = Array.from({ length: TOTAL_PART6_PA
         choices: q1Shuffled.choices,
         correctAnswer: q1Shuffled.correctAnswer,
         explanation: "An adverb is required to modify the process verb in context.",
-        explanationJa: "文脈上、動作を修飾する副詞が必要なので A が正解です。",
+        explanationJa: "文脈上、動作を修飾する副詞が必要です。",
         tags: ["副詞", "文法", "Part6"],
       },
       {
@@ -311,7 +311,7 @@ export const part6Passages: Part6Passage[] = Array.from({ length: TOTAL_PART6_PA
         choices: q2Shuffled.choices,
         correctAnswer: q2Shuffled.correctAnswer,
         explanation: "The business collocation in this context is 'maintain/submit/review/coordinate/monitor key items'.",
-        explanationJa: "文脈に自然なビジネスコロケーションを選ぶ問題で、A が最適です。",
+        explanationJa: "文脈に自然なビジネスコロケーションを選ぶ問題です。",
         tags: ["語彙", "コロケーション", "Part6"],
       },
       {
@@ -337,7 +337,7 @@ export const part6Passages: Part6Passage[] = Array.from({ length: TOTAL_PART6_PA
         choices: q4Shuffled.choices,
         correctAnswer: q4Shuffled.correctAnswer,
         explanation: "The inserted sentence must bridge the process description and the concluding benefit statement.",
-        explanationJa: "前段の手順説明と後段の効果説明を自然につなぐ一文は A です。",
+        explanationJa: "前段の手順説明と後段の効果説明を自然につなぐ一文を選びます。",
         tags: ["一文挿入", "段落構成", "Part6"],
       },
     ],

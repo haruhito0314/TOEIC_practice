@@ -393,9 +393,9 @@ function buildTriple(index: number): Part7Passage {
   };
 }
 
-const TOTAL_SINGLE = 65;
-const TOTAL_DOUBLE = 40;
-const TOTAL_TRIPLE = 15;
+const TOTAL_SINGLE = 92;
+const TOTAL_DOUBLE = 57;
+const TOTAL_TRIPLE = 21;
 
 const singlePassages = Array.from({ length: TOTAL_SINGLE }, (_, i) => buildSingle(i));
 const doublePassages = Array.from({ length: TOTAL_DOUBLE }, (_, i) => buildDouble(i));

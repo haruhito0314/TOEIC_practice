@@ -630,7 +630,7 @@ const templates: Template[] = [
   },
 ];
 
-const TOTAL_PART5_QUESTIONS = 600;
+const TOTAL_PART5_QUESTIONS = 1000;
 
 export const part5Questions: Part5Question[] = Array.from(
   { length: TOTAL_PART5_QUESTIONS },
